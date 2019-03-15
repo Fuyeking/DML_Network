@@ -16,7 +16,6 @@ class ClientNode:
         """
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.ready = False  # 准备状态
-        self.send_q = queue.Queue(10)
 
     def connect(self, host, port):
         self.server_socket.connect((host, port))
@@ -60,7 +59,8 @@ class SendThread(threading.Thread):
 
     def run(self):
         print("开启线程：" + self.name)
-        send_thread_fun(self.send_client, self.send_q)
+        while True:
+            self.send_client.send_data(self.send_q)
         print("退出线程：" + self.name)
 
 
@@ -74,26 +74,14 @@ class RecThread(threading.Thread):
     def run(self):
         print("开启线程：" + self.name)
         while True:
-            receive_thread_fun(self.rec_client, self.rec_q)
-
-
-def send_thread_fun(send_client, send_q):
-    while True:
-        send_client.send_data(send_q)
-
-
-def receive_thread_fun(rec_client, rec_q):
-    while True:
-        rec_client.rec_data(rec_q)
-
-    """ 定义存放发送和接受的队列"""
+            self.rec_client.rec_data(self.rec_q)
 
 
 send_data = queue.Queue()
 rec_data = queue.Queue()
 
 client = ClientNode()
-client.connect("127.0.0.1", 12346)
+client.connect("127.0.0.1", 12345)
 client.prepare_net()
 for index in range(1, 10):
     send_data.put(index)

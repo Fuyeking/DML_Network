@@ -101,7 +101,8 @@ class CalcAverageLoss(threading.Thread):
             self.rec_lock.release()
 
 
-ip_set = {12345: "127.0.0.1", 12346: "127.0.0.1"}
+ip_set = {12345: "127.0.0.1"}
+
 for key, value in ip_set.items():
     rec_queue_lock = threading.Lock()
     send_queue_lock = threading.Lock()
@@ -109,6 +110,7 @@ for key, value in ip_set.items():
     send_data = queue.Queue()
     server = ServerNode(value, key)
     server.create_conn()
+
     rec_thread = ServerRecThread(1, "服务端接受线程", server, rec_data, rec_queue_lock)
     rec_thread.start()
     calcLoss = CalcAverageLoss(3, "计算平均梯度", send_data, rec_data, rec_queue_lock)
