@@ -93,7 +93,7 @@ send_data = queue.Queue()
 rec_data = queue.Queue()
 
 client = ClientNode()
-client.connect("127.0.0.1", 12345)
+client.connect("127.0.0.1", 12346)
 client.prepare_net()
 for index in range(1, 10):
     send_data.put(index)
