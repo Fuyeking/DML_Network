@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
-# 文件名：client.py
+# 文件名：client_test1.py
 import socket
 import queue
 import threading
@@ -59,8 +59,7 @@ class SendThread(threading.Thread):
 
     def run(self):
         print("开启线程：" + self.name)
-        while True:
-            self.send_client.send_data(self.send_q)
+        send_thread_fun(self.send_client, self.send_q)
         print("退出线程：" + self.name)
 
 
@@ -74,16 +73,28 @@ class RecThread(threading.Thread):
     def run(self):
         print("开启线程：" + self.name)
         while True:
-            self.rec_client.rec_data(self.rec_q)
+            receive_thread_fun(self.rec_client, self.rec_q)
+
+
+def send_thread_fun(send_client, send_q):
+    while True:
+        send_client.send_data(send_q)
+
+
+def receive_thread_fun(rec_client, rec_q):
+    while True:
+        rec_client.rec_data(rec_q)
+
+    """ 定义存放发送和接受的队列"""
 
 
 send_data = queue.Queue()
 rec_data = queue.Queue()
 
 client = ClientNode()
-client.connect("127.0.0.1", 12345)
+client.connect("127.0.0.1", 12346)
 client.prepare_net()
-for index in range(1, 10):
+for index in range(10, 20):
     send_data.put(index)
 send_thread = SendThread("客户端发进程", client, send_data)
 send_thread.start()
