@@ -17,12 +17,12 @@ class ServerNode:
     def __del__(self):
         self.__close_socket__()
 
-    def set_thread_list(self, thread_list):
-        self.thread_list = thread_list
-
     def __close_socket__(self):
         if self.socket_reference_count == 0:
             self.server_socket.close()
+
+    def set_thread_list(self, thread_list):
+        self.thread_list = thread_list
 
     def increase_reference_count(self):
         self.socket_reference_count += 1
