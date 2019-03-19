@@ -91,6 +91,10 @@ class ParameterServer:
             node.start_send_loss()
 
     def _create_threads(self):
+        '''
+        针对每个客户节点创建对应的服务节点
+        :return:
+        '''
         for port, ip in self.ip_set.items():
             rec_queue_lock = threading.Lock()
             self.rec_locks[port] = rec_queue_lock
@@ -106,7 +110,9 @@ class ParameterServer:
             send_thread = sn.ServerSendThread(2, "服务端发送线程", self.server_nodes[port], send_data, send_queue_lock)
             thread_list.append(send_thread)
             self.server_nodes[port].set_thread_list(thread_list)
-        self.calc_loss_thread = CalcAverageLoss(3, "参数服务器计算平均梯度", self.ip_set, self.send_queues, self.rec_queues,
+
+        # 每个参数节点创建一个负责计算平均梯度的线程
+        self.calc_loss_thread = CalcAverageLoss(3, "计算平均梯度线程", self.ip_set, self.send_queues, self.rec_queues,
                                                 self.rec_locks)
 
     def _start_threads(self):
