@@ -63,21 +63,21 @@ class ParameterServer:
         self.server_nodes = {}
         self.calc_loss_thread = None
 
-    def _start_send_loss(self):
-        self.calc_loss_thread.start()
-
     def distributed_dnn(self):
-        self._create_server_nodes()
-        self._init_socket_conn()
-        self._create_threads()
-        self._start_threads()
-        self._send_new_loss()
-        self._start_calc_loss_thread()
+        self._create_server_nodes()  # 根据计算节点的个数创建对应的通信节点
+        self._init_socket_conn()  # 和计算节点建立连接
+        self._create_threads()  # 每个通信节点创建两个进程（负责收、发）
+        self._start_threads()  # 开启进程
+        self._notify_clients()  # 通知所有的计算节点可以开始发送数据
+        self._start_calc_loss_thread()  # 开启计算平均梯度的线程
 
     def _create_server_nodes(self):
         for port, ip in self.ip_set.items():
             server = sn.ServerNode(ip, port)
             self.server_nodes[port] = server
+
+    def _start_send_loss(self):
+        self.calc_loss_thread.start()
 
     def _init_socket_conn(self):
         for port, ip in self.ip_set.items():
@@ -85,7 +85,7 @@ class ParameterServer:
             while not node.ready_state:
                 node.create_conn()
 
-    def _send_new_loss(self):
+    def _notify_clients(self):
         for port, ip in self.ip_set.items():
             node: sn.ServerNode = self.server_nodes[port]
             node.start_send_loss()

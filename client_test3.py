@@ -13,6 +13,6 @@ send_thread.start()
 rec_thread = cn.RecThread("客户端收进程", client)
 rec_thread.start()
 while True:
-    data = client.get_rec_data()
-    if data is not None:
-        print("收到数据", data)
+    new_loss = client.get_rec_data()
+    if new_loss is not None:
+        print("receive new loss", new_loss)
