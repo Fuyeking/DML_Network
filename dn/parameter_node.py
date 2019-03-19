@@ -1,5 +1,6 @@
-import threading
 import queue
+import threading
+
 from dn import server_node as sn
 
 
@@ -20,11 +21,15 @@ class CalcAverageLoss(threading.Thread):
 
     def run(self):
         while True:
-            while self._check_rec_list():
-                send_loss = self._calc_average_loss()
-                self._send_new_loss(send_loss)
+            while self._check_rec_list():  # 所有计算节点已经发送数据到参数节点
+                send_loss = self._calc_average_loss()  # 计算均值
+                self._send_new_loss(send_loss)  # 给所有计算节点发送新的loss
 
     def _check_rec_list(self):
+        '''
+        判断所有的接受队列是否为空，不为空返回True，发送数据。为空，返回False，不发送数据
+        :return:
+        '''
         for port, ip in self.ip_set.items():
             if self.rec_data_list[port].empty():
                 return False
@@ -105,9 +110,9 @@ class ParameterServer:
             send_data = queue.Queue()
             self.send_queues[port] = send_data
             thread_list = []
-            rec_thread = sn.ServerRecThread(1, "服务端接受线程", self.server_nodes[port], rec_data, rec_queue_lock)
+            rec_thread = sn.ServerRecBaseThread(1, "服务端接受线程", self.server_nodes[port], rec_data, rec_queue_lock)
             thread_list.append(rec_thread)
-            send_thread = sn.ServerSendThread(2, "服务端发送线程", self.server_nodes[port], send_data, send_queue_lock)
+            send_thread = sn.ServerSendBaseThread(2, "服务端发送线程", self.server_nodes[port], send_data, send_queue_lock)
             thread_list.append(send_thread)
             self.server_nodes[port].set_thread_list(thread_list)
 

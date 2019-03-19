@@ -65,7 +65,7 @@ class ServerNode:
             send_lock.release()
 
 
-class ServerRecThread(threading.Thread):
+class ServerRecBaseThread(threading.Thread):
 
     def __init__(self, thread_id, thread_name, server_obj, rec_q, rec_lock):
         threading.Thread.__init__(self)
@@ -85,7 +85,7 @@ class ServerRecThread(threading.Thread):
             self.server_obj.rec_data(self.rec_q, self.rec_lock)
 
 
-class ServerSendThread(threading.Thread):
+class ServerSendBaseThread(threading.Thread):
 
     def __init__(self, thread_id, thread_name, server_obj, send_q, send_lock):
         threading.Thread.__init__(self)
