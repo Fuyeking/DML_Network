@@ -10,25 +10,25 @@ class ServerNode:
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.bind((host, ip_port))
         self.ready_state = False
-        self.socket_reference_count = 0
+        self.__socket_reference_count = 0
         self.thread_list = []
         self.client = None
 
     def __del__(self):
-        self.__close_socket__()
+        self.__close_socket()
 
-    def __close_socket__(self):
-        if self.socket_reference_count == 0:
+    def __close_socket(self):
+        if self.__socket_reference_count == 0:
             self.server_socket.close()
 
     def set_thread_list(self, thread_list):
         self.thread_list = thread_list
 
     def increase_reference_count(self):
-        self.socket_reference_count += 1
+        self.__socket_reference_count += 1
 
     def decrease_reference_count(self):
-        self.socket_reference_count -= 1
+        self.__socket_reference_count -= 1
 
     def create_conn(self):
         self.server_socket.listen(5)

@@ -18,9 +18,16 @@ class ClientNode:
         self.ready = False  # 准备状态
         self.send_queue = queue.Queue()
         self.rec_queue = queue.Queue()
+        self.socket_reference_count = 0
 
     def __del__(self):
-        self._close()
+        self._close_socket()
+
+    def increase_socket_reference_count(self):
+        self.socket_reference_count += 1
+
+    def decrease_socket_reference_count(self):
+        self.socket_reference_count -= 1
 
     def connect(self, host, port):
         self.server_socket.connect((host, port))
@@ -41,7 +48,7 @@ class ClientNode:
             if not self.send_queue.empty():
                 # send_lock.acquire()
                 loss = self.send_queue.get()
-                print("发送数据", loss)
+                print("send loss:", loss)
                 self.server_socket.send(str(loss).encode("utf-8"))
                 time.sleep(0.1)
                 # send_lock.release()
@@ -52,32 +59,50 @@ class ClientNode:
             if data:
                 p = data.decode("utf-8")
                 self.rec_queue.put(float(p))
-                print("接受数据：", p)
 
-    def _close(self):
-        self.server_socket.close()
+    def get_rec_data(self):
+        if not self.rec_queue.empty():
+            return self.rec_queue.get()
+
+    def _close_socket(self):
+        if self.socket_reference_count == 0:
+            self.server_socket.close()
 
 
 class SendThread(threading.Thread):
+    send_client: ClientNode
+
     def __init__(self, name, send_client):
         threading.Thread.__init__(self)
         self.name = name
         self.send_client = send_client
+        self.send_client.increase_socket_reference_count()
+        print("create the send thread：" + self.name)
+
+    def __del__(self):
+        print("delete the thread：" + self.name)
+        self.send_client.decrease_socket_reference_count()
 
     def run(self):
-        print("开启线程：" + self.name)
+        print("start thread：" + self.name)
         while True:
             self.send_client.send_data()
-        print("退出线程：" + self.name)
 
 
 class RecThread(threading.Thread):
+    rec_client: ClientNode
+
     def __init__(self, name, rec_client):
         threading.Thread.__init__(self)
         self.name = name
         self.rec_client = rec_client
+        self.rec_client.increase_socket_reference_count()
+
+    def __del__(self):
+        self.rec_client.decrease_socket_reference_count()
+        print("delete the thread：" + self.name)
 
     def run(self):
-        print("开启线程：" + self.name)
+        print("start the thread：" + self.name)
         while True:
             self.rec_client.rec_data()

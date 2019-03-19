@@ -12,3 +12,7 @@ send_thread = cn.SendThread("客户端发进程", client)
 send_thread.start()
 rec_thread = cn.RecThread("客户端收进程", client)
 rec_thread.start()
+while True:
+    data = client.get_rec_data()
+    if data is not None:
+        print("收到数据", data)
