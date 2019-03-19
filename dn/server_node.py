@@ -1,5 +1,5 @@
-import threading
 import socket
+import threading
 
 data_size = 1024
 
@@ -7,10 +7,15 @@ data_size = 1024
 class ServerNode:
 
     def __init__(self, host, ip_port):
-        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        '''
+
+        :param host: 用于和一个work通信的端口
+        :param ip_port: work的IP地址
+        '''
+        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # 用于通信的socket
         self.server_socket.bind((host, ip_port))
-        self.ready_state = False
-        self.__socket_reference_count = 0
+        self.ready_state = False  # 网络连接状态
+        self.__socket_reference_count = 0  # socket会在多个线程中被使用，引用次数，在析构过程中，引用次数为0，便可以直接删除
         self.thread_list = []
         self.client = None
 
@@ -61,6 +66,7 @@ class ServerNode:
 
 
 class ServerRecThread(threading.Thread):
+
     def __init__(self, thread_id, thread_name, server_obj, rec_q, rec_lock):
         threading.Thread.__init__(self)
         self.thread_id = thread_id
