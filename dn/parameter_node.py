@@ -16,7 +16,7 @@ class CalcAverageLoss(threading.Thread):
         self.rec_data_list = rec_list
         self.rec_lock_list = rec_lock_list
         self.ip_set = ip_set
-        print("开启" + self.thread_name)
+        print("start the thread:" + self.thread_name)
 
     def run(self):
         while True:
@@ -37,7 +37,7 @@ class CalcAverageLoss(threading.Thread):
             if not self.rec_data_list[port].empty():
                 sum_loss += self.rec_data_list[port].get()
             self.rec_lock_list[port].release()
-            print("梯度总和：", sum_loss)
+            print("calc the summary of loss：", sum_loss)
         average_loss = sum_loss / len(self.ip_set)
         return average_loss
 

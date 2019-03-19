@@ -15,7 +15,7 @@ class ClientNode:
         """
         """
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.ready = False  # 准备状态
+        self.ready = False  # 网络连接准备状态
         self.send_queue = queue.Queue()
         self.rec_queue = queue.Queue()
         self.socket_reference_count = 0
