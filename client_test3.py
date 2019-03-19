@@ -3,16 +3,22 @@
 # 文件名：client_test1.py
 from dn import client_node as cn
 
-client = cn.ClientNode()
-client.connect("127.0.0.1", 12347)
-client.prepare_net()
-for index in range(1, 10):
-    client.add_send_data(index)
-send_thread = cn.SendThread("客户端发进程", client)
-send_thread.start()
-rec_thread = cn.RecThread("客户端收进程", client)
-rec_thread.start()
-while True:
-    new_loss = client.get_rec_data()
-    if new_loss is not None:
-        print("receive new loss", new_loss)
+
+port = 12346
+ip = "127.0.0.1"
+
+
+def test():
+    client = cn.ClientNode()
+    client.connect(ip, port)
+    client.prepare_net()
+    for loss in range(1, 10):
+        client.add_send_data(loss)
+    send_thread = cn.SendThread("计算节点", client)
+    send_thread.start()
+    rec_thread = cn.RecThread("计算节点", client)
+    rec_thread.start()
+
+
+if __name__ == '__main__':
+    test()
