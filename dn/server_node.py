@@ -45,25 +45,6 @@ class ServerNode:
     def start_send_loss(self):
         self.client.send("OK".encode('utf-8'))
 
-    def rec_data(self, rec_q, rec_lock):
-        if self.ready_state:
-            data = self.client.recv(data_size)
-            if data:
-                p = data.decode("utf-8")
-                print("接收数据", p)
-                rec_lock.acquire()
-                rec_q.put(float(p))
-                rec_lock.release()
-
-    def send_data(self, send_q, send_lock):
-        if self.ready_state:
-            send_lock.acquire()
-            if not send_q.empty():
-                loss = send_q.get()
-                print("发送", loss, len(str(loss).encode("utf-8")))
-                self.client.send(str(loss).encode("utf-8"))
-            send_lock.release()
-
 
 class ServerRecBaseThread(threading.Thread):
     server_obj: ServerNode
@@ -107,7 +88,7 @@ class ServerSendBaseThread(threading.Thread):
         self.send_q = send_q
         self.send_lock = send_lock
         self.server_obj.increase_reference_count()
-        print("开启" + self.thread_name)
+        print("start the thread" + self.thread_name)
 
     def __del__(self):
         self.server_obj.decrease_reference_count()
@@ -121,6 +102,6 @@ class ServerSendBaseThread(threading.Thread):
             self.send_lock.acquire()
             if not self.send_q.empty():
                 loss = self.send_q.get()
-                print("send:", loss, len(str(loss).encode("utf-8")))
+                print("send:", loss)
                 self.server_obj.client.send(str(loss).encode("utf-8"))
             self.send_lock.release()

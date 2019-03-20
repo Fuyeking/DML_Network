@@ -1,8 +1,8 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 # 文件名：work_simulator1.py
-import socket
 import queue
+import socket
 import threading
 import time
 
@@ -15,9 +15,11 @@ class ClientNode:
         """
         """
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.ready = False  # 网络连接准备状态
+        self.net_ready = False  # 网络连接准备状态
         self.send_queue = queue.Queue()
         self.rec_queue = queue.Queue()
+        self.send_lock = threading.Lock()
+        self.rec_lock = threading.Lock()
         self.socket_reference_count = 0
 
     def __del__(self):
@@ -34,31 +36,14 @@ class ClientNode:
         return self.server_socket
 
     def prepare_net(self):
-        while not self.ready:
+        while not self.net_ready:
             data = self.server_socket.recv(1024)
             print(data.decode("utf-8"))
             if data.decode("utf-8") == "OK":
-                self.ready = True
+                self.net_ready = True
 
     def add_send_data(self, data):
         self.send_queue.put(data)
-
-    def send_data(self):
-        if self.ready:
-            if not self.send_queue.empty():
-                # send_lock.acquire()
-                loss = self.send_queue.get()
-                print("send loss:", loss)
-                self.server_socket.send(str(loss).encode("utf-8"))
-                time.sleep(0.1)
-                # send_lock.release()
-
-    def rec_data(self):
-        if self.ready:
-            data = self.server_socket.recv(data_size)
-            if data:
-                p = data.decode("utf-8")
-                self.rec_queue.put(float(p))
 
     def get_rec_data(self):
         if not self.rec_queue.empty():
@@ -77,6 +62,8 @@ class SendThread(threading.Thread):
         self.name = name
         self.send_client = send_client
         self.send_client.increase_socket_reference_count()
+        self.send_queue = send_client.send_queue
+        self.send_lock = send_client.send_lock
         print("create the send thread：" + self.name)
 
     def __del__(self):
@@ -86,7 +73,21 @@ class SendThread(threading.Thread):
     def run(self):
         print("start thread：" + self.name)
         while True:
-            self.send_client.send_data()
+            self.send_data()
+
+    def send_data(self):
+        if self.send_client.net_ready:
+            if not self.send_queue.empty():
+                # self.send_lock.acquire()
+                data = self.send_queue.get()
+                if data is not None:
+                    print("send data:", data)
+                    self.send_client.server_socket.send(self.handle_data(data))
+                time.sleep(0.1)
+                # self.send_lock.release()
+
+    def handle_data(self, data):
+        return str(data).encode("utf-8")
 
 
 class RecThread(threading.Thread):
@@ -97,6 +98,8 @@ class RecThread(threading.Thread):
         self.name = name
         self.rec_client = rec_client
         self.rec_client.increase_socket_reference_count()
+        self.rec_queue = rec_client.rec_queue
+        self.rec_lock = rec_client.rec_lock
 
     def __del__(self):
         self.rec_client.decrease_socket_reference_count()
@@ -105,4 +108,19 @@ class RecThread(threading.Thread):
     def run(self):
         print("start the thread：" + self.name)
         while True:
-            self.rec_client.rec_data()
+            self.rec_data()
+
+    def rec_data(self):
+        if self.rec_client.net_ready:
+            data = self.rec_client.server_socket.recv(data_size)
+            if data:
+                self.rec_queue.put(self.handle_data(data))
+
+    def handle_data(self, data):
+        '''
+        子类继承后，根据应用场景不同，进行重载
+        :param data:
+        :return:
+        '''
+        data = data.decode("utf-8")
+        return float(data)
