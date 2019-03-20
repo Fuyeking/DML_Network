@@ -8,7 +8,7 @@
 @time: 2019/3/20 13:33
 @desc:
 '''
-from testtool import test_fun
+from TestTool import test_fun
 
 port = 12346
 ip = "127.0.0.1"
