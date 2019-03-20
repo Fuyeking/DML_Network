@@ -5,7 +5,7 @@ import queue
 import socket
 import threading
 import time
-
+import json
 data_size = 1024
 
 
@@ -87,7 +87,7 @@ class SendThread(threading.Thread):
                 # self.send_lock.release()
 
     def handle_data(self, data):
-        return str(data).encode("utf-8")
+        return json.dumps(data).encode()
 
 
 class RecThread(threading.Thread):
@@ -122,5 +122,4 @@ class RecThread(threading.Thread):
         :param data:
         :return:
         '''
-        data = data.decode("utf-8")
-        return float(data)
+        return json.loads(data.decode())

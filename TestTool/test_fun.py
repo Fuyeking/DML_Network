@@ -15,8 +15,13 @@ def dnn_test(ip, port):
     client = cn.ClientNode()
     client.connect(ip, port)
     client.prepare_net()
+
     for loss in range(1, 10):
-        client.add_send_data(loss)
+        dic = dict()
+        dic['w'] = loss
+        dic['b'] = loss + 0.1
+        client.add_send_data(dic)
+
     send_thread = cn.SendThread("计算节点", client)
     send_thread.start()
     rec_thread = cn.RecThread("计算节点", client)

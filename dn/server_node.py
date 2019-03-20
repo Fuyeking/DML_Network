@@ -1,3 +1,4 @@
+import json
 import socket
 import threading
 
@@ -70,11 +71,13 @@ class ServerRecBaseThread(threading.Thread):
         if self.server_obj.ready_state:
             data = self.server_obj.client.recv(data_size)
             if data:
-                p = data.decode("utf-8")
-                print("接收数据", p)
                 self.rec_lock.acquire()
-                self.rec_q.put(float(p))
+                self.rec_q.put(self.post_process(data))
                 self.rec_lock.release()
+
+    def post_process(self, data):
+        print("recieve data:", data)
+        return json.loads(data.decode())
 
 
 class ServerSendBaseThread(threading.Thread):
@@ -101,7 +104,10 @@ class ServerSendBaseThread(threading.Thread):
         if self.server_obj.ready_state:
             self.send_lock.acquire()
             if not self.send_q.empty():
-                loss = self.send_q.get()
-                print("send:", loss)
-                self.server_obj.client.send(str(loss).encode("utf-8"))
+                data = self.send_q.get()
+
+                self.server_obj.client.send(self.pre_process(data))
             self.send_lock.release()
+
+    def pre_process(self, data):
+        return json.dumps(data).encode()

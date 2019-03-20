@@ -120,14 +120,21 @@ class CalcAverageLoss(threading.Thread):
         return True
 
     def _calc_average_loss(self):
-        sum_loss = 0
+        sum_w = 0
+        sum_b = 0
         for port, ip in self.ip_set.items():
             self.rec_lock_list[port].acquire()
             if not self.rec_data_list[port].empty():
-                sum_loss += self.rec_data_list[port].get()
+                data = self.rec_data_list[port].get()
+                if data is not None:
+                    print("calc:", data)
+                    sum_w += data['w']
+                    sum_b += data['b']
             self.rec_lock_list[port].release()
-            print("calc the summary of loss：", sum_loss)
-        average_loss = sum_loss / len(self.ip_set)
+            print("calc the summary of loss：", sum_w, sum_b)
+        average_loss = dict()
+        average_loss['w'] = sum_w
+        average_loss['b'] = sum_b
         return average_loss
 
     def _send_new_loss(self, new_loss):
