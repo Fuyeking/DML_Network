@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
-# 文件名：client_test1.py
+# 文件名：work_simulator1.py
 import socket
 import queue
 import threading

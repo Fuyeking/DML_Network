@@ -66,6 +66,7 @@ class ServerNode:
 
 
 class ServerRecBaseThread(threading.Thread):
+    server_obj: ServerNode
 
     def __init__(self, thread_id, thread_name, server_obj, rec_q, rec_lock):
         threading.Thread.__init__(self)
@@ -82,10 +83,21 @@ class ServerRecBaseThread(threading.Thread):
 
     def run(self):
         while True:
-            self.server_obj.rec_data(self.rec_q, self.rec_lock)
+            self.rec_data()
+
+    def rec_data(self):
+        if self.server_obj.ready_state:
+            data = self.server_obj.client.recv(data_size)
+            if data:
+                p = data.decode("utf-8")
+                print("接收数据", p)
+                self.rec_lock.acquire()
+                self.rec_q.put(float(p))
+                self.rec_lock.release()
 
 
 class ServerSendBaseThread(threading.Thread):
+    server_obj: ServerNode
 
     def __init__(self, thread_id, thread_name, server_obj, send_q, send_lock):
         threading.Thread.__init__(self)
@@ -102,4 +114,13 @@ class ServerSendBaseThread(threading.Thread):
 
     def run(self):
         while True:
-            self.server_obj.send_data(self.send_q, self.send_lock)
+            self.send_data()
+
+    def send_data(self):
+        if self.server_obj.ready_state:
+            self.send_lock.acquire()
+            if not self.send_q.empty():
+                loss = self.send_q.get()
+                print("send:", loss, len(str(loss).encode("utf-8")))
+                self.server_obj.client.send(str(loss).encode("utf-8"))
+            self.send_lock.release()
