@@ -39,8 +39,8 @@ def calc_gradient(w_curr, b_curr, points, lr_rate):
 
 
 def gradient_run(w_i, b_i, num_itr, points, lr, send_obj):
-    [w, b] = get_weight_b(send_obj)
     for i in range(num_itr):
+        [w, b] = get_weight_b(send_obj)
         w, b = calc_gradient(w, b, points, lr)
         send_obj.add_send_data(create_send_data(w, b))
     return [w, b]

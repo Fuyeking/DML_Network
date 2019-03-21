@@ -127,14 +127,14 @@ class CalcAverageLoss(threading.Thread):
             if not self.rec_data_list[port].empty():
                 data = self.rec_data_list[port].get()
                 if data is not None:
-                    print("calc:", data)
                     sum_w += data['w']
                     sum_b += data['b']
             self.rec_lock_list[port].release()
-            print("calc the summary of loss：", sum_w, sum_b)
+
         average_loss = dict()
-        average_loss['w'] = sum_w
-        average_loss['b'] = sum_b
+        average_loss['w'] = sum_w/3
+        average_loss['b'] = sum_b/3
+        print("new  loss：", average_loss)
         return average_loss
 
     def _send_new_loss(self, new_loss):
