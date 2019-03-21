@@ -10,6 +10,8 @@
 '''
 import numpy as np
 
+from dn import client_node as cn
+
 
 # y = wx+b
 # e = y - (wx +b)
@@ -36,11 +38,11 @@ def calc_gradient(w_curr, b_curr, points, lr_rate):
     return [w_new, b_new]
 
 
-def gradient_run(w_i, b_i, num_itr, points, lr):
-    w = w_i
-    b = b_i
+def gradient_run(w_i, b_i, num_itr, points, lr, send_obj):
+    [w, b] = get_weight_b(send_obj)
     for i in range(num_itr):
         w, b = calc_gradient(w, b, points, lr)
+        send_obj.add_send_data(create_send_data(w, b))
     return [w, b]
 
 
@@ -53,23 +55,49 @@ def compute_total_loss(w, b, points):
     return total_loss / float(len(points))
 
 
-def run():
-    points = np.genfromtxt("data.csv", delimiter=",")
+def create_send_data(w, b):
+    data = dict()
+    data['w'] = w
+    data['b'] = b
+    return data
+
+
+def get_weight_b(client):
+    while True:
+        data = client.get_rec_data()
+        if data is not None:
+            print(data)
+            return [data['w'], data['b']]
+
+
+def gd_test(ip, port):
+    points = np.genfromtxt("TestTool/data.csv", delimiter=",")
     learning_rate = 0.0001
     initial_b = 0  # initial y-intercept guess
     initial_w = 0  # initial slope guess
     num_iterations = 1000
+    # 引入网络通信接口
+    client = cn.ClientNode()
+    client.connect(ip, port)
+    client.prepare_net()
+    send_thread = cn.SendThread("计算节点", client)
+    rec_thread = cn.RecThread("计算节点", client)
+    client.add_send_data(create_send_data(initial_w, initial_b))
+    send_thread.start()
+    rec_thread.start()
     print("Starting gradient descent at w = {0}, b = {1}, error = {2}"
           .format(initial_w, initial_b,
                   compute_total_loss(initial_w, initial_b, points))
           )
     print("Running...")
-    [w, b] = gradient_run(initial_w, initial_b, num_iterations, points, learning_rate)
+    [w, b] = gradient_run(initial_w, initial_b, num_iterations, points, learning_rate, client)
     print("After {0} iterations w = {1}, b = {2}, error = {3}".
           format(num_iterations, w, b,
                  compute_total_loss(w, b, points))
           )
 
 
+ip = "127.0.0.1"
+port = 12345
 if __name__ == '__main__':
-    run()
+    gd_test(ip, port)

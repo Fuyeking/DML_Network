@@ -105,7 +105,6 @@ class ServerSendBaseThread(threading.Thread):
             self.send_lock.acquire()
             if not self.send_q.empty():
                 data = self.send_q.get()
-
                 self.server_obj.client.send(self.pre_process(data))
             self.send_lock.release()
 

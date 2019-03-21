@@ -1,11 +1,12 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 # 文件名：work_simulator1.py
+import json
 import queue
 import socket
 import threading
 import time
-import json
+
 data_size = 1024
 
 
@@ -46,12 +47,15 @@ class ClientNode:
         self.send_queue.put(data)
 
     def get_rec_data(self):
+        # self.rec_lock.acquire()
         if not self.rec_queue.empty():
             return self.rec_queue.get()
+        # self.rec_lock.release()
 
-    def _close_socket(self):
-        if self.socket_reference_count == 0:
-            self.server_socket.close()
+
+def _close_socket(self):
+    if self.socket_reference_count == 0:
+        self.server_socket.close()
 
 
 class SendThread(threading.Thread):
@@ -114,7 +118,10 @@ class RecThread(threading.Thread):
         if self.rec_client.net_ready:
             data = self.rec_client.server_socket.recv(data_size)
             if data:
+                print("client recieve data", data)
+                # self.rec_lock.acquire()
                 self.rec_queue.put(self.handle_data(data))
+                # self.rec_lock.release()
 
     def handle_data(self, data):
         '''

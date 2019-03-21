@@ -9,9 +9,11 @@
 @desc:
 '''
 from TestTool import test_fun
+from TestTool import gd
 
 port = 12346
 ip = "127.0.0.1"
 
 if __name__ == '__main__':
-    test_fun.dnn_test(ip, port)
+    #test_fun.dnn_test(ip, port)
+    gd.gd_test(ip, port)
