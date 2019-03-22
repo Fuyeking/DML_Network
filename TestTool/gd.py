@@ -38,11 +38,11 @@ def calc_gradient(w_curr, b_curr, points, lr_rate):
     return [w_new, b_new]
 
 
-def gradient_run(w_i, b_i, num_itr, points, lr, send_obj):
+def gradient_run(w_i, b_i, num_itr, points, lr, client):
     for i in range(num_itr):
-        [w, b] = get_weight_b(send_obj)
+        [w, b] = get_weight_b(client)  # 发送梯度到参数服务器
         w, b = calc_gradient(w, b, points, lr)
-        send_obj.add_send_data(create_send_data(w, b))
+        client.add_send_data(create_send_data(w, b))  # 接受参数服务器反馈的均值
     return [w, b]
 
 

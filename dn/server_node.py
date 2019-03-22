@@ -46,7 +46,12 @@ class ServerNode:
     def start_send_loss(self):
         self.client.send("OK".encode('utf-8'))
 
+    def run_thread(self):
+        for i in range(len(self.thread_list)):
+            self.thread_list[i].start()
 
+
+# 服务端的接受线程
 class ServerRecBaseThread(threading.Thread):
     server_obj: ServerNode
 
@@ -75,11 +80,13 @@ class ServerRecBaseThread(threading.Thread):
                 self.rec_q.put(self.post_process(data))
                 self.rec_lock.release()
 
+    # 可以被之类重载
     def post_process(self, data):
         print("recieve data:", data)
         return json.loads(data.decode())
 
 
+# 服务端的发送进程
 class ServerSendBaseThread(threading.Thread):
     server_obj: ServerNode
 
@@ -108,5 +115,6 @@ class ServerSendBaseThread(threading.Thread):
                 self.server_obj.client.send(self.pre_process(data))
             self.send_lock.release()
 
+    # 可以被子类重载
     def pre_process(self, data):
         return json.dumps(data).encode()

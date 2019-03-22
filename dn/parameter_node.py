@@ -80,9 +80,8 @@ class ParameterServer:
 
     def _start_threads(self):
         for port, ip in self.ip_set.items():
-            thread_list = self.server_nodes[port].thread_list
-            for i in range(len(thread_list)):
-                thread_list[i].start()
+            server_node: sn.ServerNode = self.server_nodes[port]
+            server_node.run_thread()
 
     def _start_calc_loss_thread(self):
         self.calc_loss_thread.start()
@@ -132,8 +131,8 @@ class CalcAverageLoss(threading.Thread):
             self.rec_lock_list[port].release()
 
         average_loss = dict()
-        average_loss['w'] = sum_w/3
-        average_loss['b'] = sum_b/3
+        average_loss['w'] = sum_w / 3
+        average_loss['b'] = sum_b / 3
         print("new  loss：", average_loss)
         return average_loss
 
