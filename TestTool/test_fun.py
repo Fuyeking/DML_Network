@@ -8,7 +8,7 @@
 @time: 2019/3/20 13:27
 @desc:
 '''
-from dn import client_node as cn
+from dml import client_node as cn
 
 
 def dnn_test(ip, port):

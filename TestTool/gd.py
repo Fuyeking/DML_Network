@@ -10,7 +10,7 @@
 '''
 import numpy as np
 
-from dn import client_node as cn
+from dml import client_node as cn
 
 
 # y = wx+b
