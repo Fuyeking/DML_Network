@@ -40,7 +40,7 @@ class ParameterServer:
     def _init_socket_conn(self):
         for port, ip in self.ip_set.items():
             node: sn.ServerNode = self.server_nodes[port]
-            while not node.ready_state:
+            while not node.net_state:
                 node.create_conn()
 
     def _notify_clients(self):

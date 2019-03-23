@@ -15,7 +15,7 @@ class ServerNode:
         '''
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # 用于通信的socket
         self.server_socket.bind((host, ip_port))
-        self.ready_state = False  # 网络连接状态
+        self.net_state = False  # 网络连接状态
         self.__socket_reference_count = 0  # socket会在多个线程中被使用，引用次数，在析构过程中，引用次数为0，便可以直接删除
         self.thread_list = []
         self.client = None
@@ -38,10 +38,10 @@ class ServerNode:
 
     def create_conn(self):
         self.server_socket.listen(5)
-        while not self.ready_state:
+        while not self.net_state:
             self.client, addr = self.server_socket.accept()
             print('client address', addr)
-            self.ready_state = True
+            self.net_state = True
 
     def start_send_loss(self):
         self.client.send("OK".encode('utf-8'))
@@ -73,7 +73,7 @@ class ServerRecBaseThread(threading.Thread):
             self.rec_data()
 
     def rec_data(self):
-        if self.server_obj.ready_state:
+        if self.server_obj.net_state:
             data = self.server_obj.client.recv(data_size)
             if data:
                 self.rec_lock.acquire()
@@ -108,7 +108,7 @@ class ServerSendBaseThread(threading.Thread):
             self.send_data()
 
     def send_data(self):
-        if self.server_obj.ready_state:
+        if self.server_obj.net_state:
             self.send_lock.acquire()
             if not self.send_q.empty():
                 data = self.send_q.get()
