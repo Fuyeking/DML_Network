@@ -20,15 +20,20 @@ from dml import worker_node as wn
 class ServerRecBaseThread(threading.Thread):
     server_obj: sn.ServerNode
 
-    def __init__(self, thread_id, thread_name, server_obj, rec_q, rec_lock):
+    def __init__(self, thread_id, thread_name):
         threading.Thread.__init__(self)
         self.thread_id = thread_id
         self.thread_name = thread_name
+        self.server_obj = None
+        self.rec_q = None
+        self.rec_lock = None
+        print("开启" + self.thread_name)
+
+    def init_para(self, server_obj, rec_q, rec_lock):
         self.server_obj = server_obj
         self.rec_q = rec_q
         self.rec_lock = rec_lock
         self.server_obj.increase_reference_count()
-        print("开启" + self.thread_name)
 
     def __del__(self):
         self.server_obj.decrease_reference_count()
@@ -55,15 +60,20 @@ class ServerRecBaseThread(threading.Thread):
 class ServerSendBaseThread(threading.Thread):
     server_obj: sn.ServerNode
 
-    def __init__(self, thread_id, thread_name, server_obj, send_q, send_lock):
+    def __init__(self, thread_id, thread_name):
         threading.Thread.__init__(self)
         self.thread_id = thread_id
         self.thread_name = thread_name
+        self.server_obj = None
+        self.send_q = None
+        self.send_lock = None
+        print("start the thread" + self.thread_name)
+
+    def init_para(self, server_obj, send_q, send_lock):
         self.server_obj = server_obj
         self.send_q = send_q
         self.send_lock = send_lock
         self.server_obj.increase_reference_count()
-        print("start the thread" + self.thread_name)
 
     def __del__(self):
         self.server_obj.decrease_reference_count()
@@ -157,3 +167,64 @@ class WorkBaseRecThread(threading.Thread):
         :return:
         '''
         return json.loads(data.decode())
+
+
+class CalcAverageLoss(threading.Thread):
+    rec_lock_list: dict
+    rec_data_list: dict
+    send_data_list: dict
+
+    def __init__(self, thread_id, thread_name ):
+        threading.Thread.__init__(self)
+        self.thread_id = thread_id
+        self.thread_name = thread_name
+        self.send_data_list = None
+        self.rec_data_list = None
+        self.rec_lock_list = None
+        self.ip_set = None
+
+        print("start the thread:" + self.thread_name)
+
+    def init_para(self, ip_set, send_list, rec_list, rec_lock_list):
+        self.send_data_list = send_list
+        self.rec_data_list = rec_list
+        self.rec_lock_list = rec_lock_list
+        self.ip_set = ip_set
+
+    def run(self):
+        while True:
+            while self._check_rec_list():  # 所有计算节点已经发送数据到参数节点
+                send_loss = self._calc_average_loss()  # 计算均值
+                self._send_new_loss(send_loss)  # 给所有计算节点发送新的loss
+
+    def _check_rec_list(self):
+        '''
+        判断所有的接受队列是否为空，不为空返回True，发送数据。为空，返回False，不发送数据
+        :return:
+        '''
+        for port, ip in self.ip_set.items():
+            if self.rec_data_list[port].empty():
+                return False
+        return True
+
+    def _calc_average_loss(self):
+        sum_w = 0
+        sum_b = 0
+        for port, ip in self.ip_set.items():
+            self.rec_lock_list[port].acquire()
+            if not self.rec_data_list[port].empty():
+                data = self.rec_data_list[port].get()
+                if data is not None:
+                    sum_w += data['w']
+                    sum_b += data['b']
+            self.rec_lock_list[port].release()
+
+        average_loss = dict()
+        average_loss['w'] = sum_w / 3
+        average_loss['b'] = sum_b / 3
+        print("new  loss：", average_loss)
+        return average_loss
+
+    def _send_new_loss(self, new_loss):
+        for port, ip in self.ip_set.items():
+            self.send_data_list[port].put(new_loss)
