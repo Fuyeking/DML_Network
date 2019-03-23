@@ -10,7 +10,7 @@
 '''
 import numpy as np
 
-from dml import client_node as cn
+from dml import worker_node as cn
 
 
 # y = wx+b
@@ -77,11 +77,11 @@ def gd_test(ip, port):
     initial_w = 0  # initial slope guess
     num_iterations = 1000
     # 引入网络通信接口
-    client = cn.ClientNode()
+    client = cn.WorkerNode()
     client.connect(ip, port)
     client.prepare_net()
-    send_thread = cn.SendThread("计算节点", client)
-    rec_thread = cn.RecThread("计算节点", client)
+    send_thread = cn.WorkBaseSendThread("计算节点", client)
+    rec_thread = cn.WorkBaseRecThread("计算节点", client)
     client.add_send_data(create_send_data(initial_w, initial_b))
     send_thread.start()
     rec_thread.start()

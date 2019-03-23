@@ -10,7 +10,7 @@ import time
 data_size = 1024
 
 
-class ClientNode:
+class WorkerNode:
 
     def __init__(self):
         """
@@ -38,7 +38,7 @@ class ClientNode:
 
     def prepare_net(self):
         while not self.net_ready:
-            data = self.server_socket.recv(1024)
+            data = self.server_socket.recv(data_size)
             print(data.decode("utf-8"))
             if data.decode("utf-8") == "OK":
                 self.net_ready = True
@@ -58,8 +58,8 @@ def _close_socket(self):
         self.server_socket.close()
 
 
-class SendThread(threading.Thread):
-    send_client: ClientNode
+class WorkBaseSendThread(threading.Thread):
+    send_client: WorkerNode
 
     def __init__(self, name, send_client):
         threading.Thread.__init__(self)
@@ -94,8 +94,8 @@ class SendThread(threading.Thread):
         return json.dumps(data).encode()
 
 
-class RecThread(threading.Thread):
-    rec_client: ClientNode
+class WorkBaseRecThread(threading.Thread):
+    rec_client: WorkerNode
 
     def __init__(self, name, rec_client):
         threading.Thread.__init__(self)

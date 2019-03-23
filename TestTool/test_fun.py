@@ -8,11 +8,11 @@
 @time: 2019/3/20 13:27
 @desc:
 '''
-from dml import client_node as cn
+from dml import worker_node as cn
 
 
 def dnn_test(ip, port):
-    client = cn.ClientNode()
+    client = cn.WorkerNode()
     client.connect(ip, port)
     client.prepare_net()
 
@@ -22,9 +22,9 @@ def dnn_test(ip, port):
         dic['b'] = loss + 0.1
         client.add_send_data(dic)
 
-    send_thread = cn.SendThread("计算节点", client)
+    send_thread = cn.WorkBaseSendThread("计算节点", client)
     send_thread.start()
-    rec_thread = cn.RecThread("计算节点", client)
+    rec_thread = cn.WorkBaseRecThread("计算节点", client)
     rec_thread.start()
     while True:
         data = client.get_rec_data()
