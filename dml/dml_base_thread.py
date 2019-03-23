@@ -20,9 +20,8 @@ from dml import worker_node as wn
 class ServerRecBaseThread(threading.Thread):
     server_obj: sn.ServerNode
 
-    def __init__(self, thread_id, thread_name):
+    def __init__(self, thread_name):
         threading.Thread.__init__(self)
-        self.thread_id = thread_id
         self.thread_name = thread_name
         self.server_obj = None
         self.rec_q = None
@@ -60,9 +59,8 @@ class ServerRecBaseThread(threading.Thread):
 class ServerSendBaseThread(threading.Thread):
     server_obj: sn.ServerNode
 
-    def __init__(self, thread_id, thread_name):
+    def __init__(self,thread_name):
         threading.Thread.__init__(self)
-        self.thread_id = thread_id
         self.thread_name = thread_name
         self.server_obj = None
         self.send_q = None
@@ -174,9 +172,8 @@ class CalcAverageLoss(threading.Thread):
     rec_data_list: dict
     send_data_list: dict
 
-    def __init__(self, thread_id, thread_name ):
+    def __init__(self, thread_name):
         threading.Thread.__init__(self)
-        self.thread_id = thread_id
         self.thread_name = thread_name
         self.send_data_list = None
         self.rec_data_list = None

@@ -69,16 +69,16 @@ class ParameterServer:
             self.send_queues[port] = send_data
             # 创建收发线程
             thread_list = []
-            rec_thread = dbt.ServerRecBaseThread(1, "服务端接受线程")
+            rec_thread = dbt.ServerRecBaseThread("服务端接受线程")
             rec_thread.init_para(self.server_nodes[port], rec_data, rec_queue_lock)
             thread_list.append(rec_thread)
-            send_thread = dbt.ServerSendBaseThread(2, "服务端发送线程")
+            send_thread = dbt.ServerSendBaseThread("服务端发送线程")
             send_thread.init_para(self.server_nodes[port], send_data, send_queue_lock)
             thread_list.append(send_thread)
             self.server_nodes[port].set_thread_list(thread_list)
 
         # 每个参数节点创建一个负责计算平均梯度的线程
-        self.calc_loss_thread = dbt.CalcAverageLoss(3, "计算平均梯度线程")
+        self.calc_loss_thread = dbt.CalcAverageLoss("计算平均梯度线程")
         self.calc_loss_thread.init_para(self.ip_set, self.send_queues, self.rec_queues, self.rec_locks)
 
     def _start_threads(self):

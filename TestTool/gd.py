@@ -10,8 +10,9 @@
 '''
 import numpy as np
 
+from dml import dml_base_thread as dbt
 from dml import worker_node as cn
-from dml import  dml_base_thread as dbt
+
 
 # y = wx+b
 # e = y - (wx +b)
