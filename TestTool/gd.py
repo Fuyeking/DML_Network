@@ -11,7 +11,7 @@
 import numpy as np
 
 from dml import worker_node as cn
-
+from dml import  dml_base_thread as dbt
 
 # y = wx+b
 # e = y - (wx +b)
@@ -80,8 +80,8 @@ def gd_test(ip, port):
     client = cn.WorkerNode()
     client.connect(ip, port)
     client.prepare_net()
-    send_thread = cn.WorkBaseSendThread("计算节点", client)
-    rec_thread = cn.WorkBaseRecThread("计算节点", client)
+    send_thread = dbt.WorkBaseSendThread("计算节点", client)
+    rec_thread = dbt.WorkBaseRecThread("计算节点", client)
     client.add_send_data(create_send_data(initial_w, initial_b))
     send_thread.start()
     rec_thread.start()

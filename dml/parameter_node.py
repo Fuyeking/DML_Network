@@ -2,7 +2,7 @@ import queue
 import threading
 
 from dml import server_node as sn
-
+from dml import dml_base_thread as dbt
 
 class ParameterServer:
     calc_loss_thread: threading.Thread
@@ -68,9 +68,9 @@ class ParameterServer:
             self.send_queues[port] = send_data
             # 创建收发线程
             thread_list = []
-            rec_thread = sn.ServerRecBaseThread(1, "服务端接受线程", self.server_nodes[port], rec_data, rec_queue_lock)
+            rec_thread = dbt.ServerRecBaseThread(1, "服务端接受线程", self.server_nodes[port], rec_data, rec_queue_lock)
             thread_list.append(rec_thread)
-            send_thread = sn.ServerSendBaseThread(2, "服务端发送线程", self.server_nodes[port], send_data, send_queue_lock)
+            send_thread = dbt.ServerSendBaseThread(2, "服务端发送线程", self.server_nodes[port], send_data, send_queue_lock)
             thread_list.append(send_thread)
             self.server_nodes[port].set_thread_list(thread_list)
 
