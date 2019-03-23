@@ -1,7 +1,7 @@
 import queue
 import threading
 
-from dn import server_node as sn
+from dml import server_node as sn
 
 
 class ParameterServer:
