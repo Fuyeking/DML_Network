@@ -59,7 +59,7 @@ class ServerRecBaseThread(threading.Thread):
 class ServerSendBaseThread(threading.Thread):
     server_obj: sn.ServerNode
 
-    def __init__(self,thread_name):
+    def __init__(self, thread_name):
         threading.Thread.__init__(self)
         self.thread_name = thread_name
         self.server_obj = None

@@ -1,8 +1,12 @@
 import queue
 import threading
 
+from sympy.strategies import new
+
 from dml import dml_base_thread as dbt
 from dml import server_node as sn
+
+module = __import__("dml.dml_base_thread")
 
 
 class ParameterServer:
@@ -73,6 +77,8 @@ class ParameterServer:
             rec_thread.init_para(self.server_nodes[port], rec_data, rec_queue_lock)
             thread_list.append(rec_thread)
             send_thread = dbt.ServerSendBaseThread("服务端发送线程")
+            #AClass = getattr(module, "ServerSendBaseThread")()
+            #send_thread = new.instance(AClass)
             send_thread.init_para(self.server_nodes[port], send_data, send_queue_lock)
             thread_list.append(send_thread)
             self.server_nodes[port].set_thread_list(thread_list)
