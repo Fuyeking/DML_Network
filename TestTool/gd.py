@@ -39,7 +39,7 @@ def calc_gradient(w_curr, b_curr, points, lr_rate):
     return [w_new, b_new]
 
 
-def gradient_run(w_i, b_i, num_itr, points, lr, client):
+def gradient_run(num_itr, points, lr, client):
     for i in range(num_itr):
         [w, b] = get_weight_b(client)  # 发送梯度到参数服务器
         w, b = calc_gradient(w, b, points, lr)
@@ -91,7 +91,7 @@ def gd_test(ip, port):
                   compute_total_loss(initial_w, initial_b, points))
           )
     print("Running...")
-    [w, b] = gradient_run(initial_w, initial_b, num_iterations, points, learning_rate, client)
+    [w, b] = gradient_run(num_iterations, points, learning_rate, client)
     print("After {0} iterations w = {1}, b = {2}, error = {3}".
           format(num_iterations, w, b,
                  compute_total_loss(w, b, points))
