@@ -72,7 +72,7 @@ def get_weight_b(client):
 
 
 def gd_test(ip, port):
-    points = np.genfromtxt("TestTool/data.csv", delimiter=",")
+    points = np.genfromtxt("examples/data.csv", delimiter=",")
     learning_rate = 0.0001
     initial_b = 0  # initial y-intercept guess
     initial_w = 0  # initial slope guess

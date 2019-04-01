@@ -122,7 +122,7 @@ class WorkBaseSendThread(threading.Thread):
                 if data is not None:
                     print("send data:", data)
                     self.send_client.server_socket.send(self.handle_data(data))
-                time.sleep(0.1)
+                #time.sleep(0.1)
                 # self.send_lock.release()
 
     def handle_data(self, data):

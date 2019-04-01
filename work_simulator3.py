@@ -8,8 +8,8 @@
 @time: 2019/3/20 13:34
 @desc:
 '''
-from TestTool import test_fun
-from TestTool import gd
+from examples import test_fun
+from examples import gd
 port = 12347
 ip = "127.0.0.1"
 

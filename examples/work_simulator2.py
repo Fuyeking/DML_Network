@@ -8,12 +8,12 @@
 @time: 2019/3/20 13:33
 @desc:
 '''
-from TestTool import test_fun
-from TestTool import gd
+from examples import cnn
 
 port = 12346
 ip = "127.0.0.1"
 
 if __name__ == '__main__':
-    #test_fun.dnn_test(ip, port)
-    gd.gd_test(ip, port)
+    # test_fun.dnn_test(ip, port)
+    # gd.gd_test(ip,port)
+    cnn.cnn_test(ip, port)
