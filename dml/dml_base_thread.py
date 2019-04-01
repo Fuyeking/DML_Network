@@ -182,11 +182,12 @@ class CalcAverageLoss(threading.Thread):
 
         print("start the thread:" + self.thread_name)
 
-    def init_para(self, ip_set, send_list, rec_list, rec_lock_list):
+    def init_para(self, ip_set, send_list, rec_list, rec_lock_list,num):
         self.send_data_list = send_list
         self.rec_data_list = rec_list
         self.rec_lock_list = rec_lock_list
         self.ip_set = ip_set
+        self.num = num
 
     def run(self):
         while True:
@@ -217,8 +218,8 @@ class CalcAverageLoss(threading.Thread):
             self.rec_lock_list[port].release()
 
         average_loss = dict()
-        average_loss['w'] = sum_w / 3
-        average_loss['b'] = sum_b / 3
+        average_loss['w'] = sum_w / self.num
+        average_loss['b'] = sum_b / self.num
         print("new  loss：", average_loss)
         return average_loss
 

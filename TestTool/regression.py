@@ -4,7 +4,7 @@
 @author: yeqing
 @contact: 474387803@qq.com
 @software: pycharm
-@file: regression.py.py
+@file: regression.py
 @time: 2019/3/27 15:55
 @desc:
 '''
@@ -52,7 +52,7 @@ for t in range(200):
     loss = loss_func(prediction, y)  # must be (1. nn output, 2. target)
 
     optimizer.zero_grad()  # clear gradients for next train
-    loss.backward()  # backpropagation, compute gradients
+    loss.backward()  # back propagation, compute gradients
     optimizer.step()  # apply gradients
 
     if t % 5 == 0:

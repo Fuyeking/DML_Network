@@ -88,7 +88,8 @@ class ParameterServer:
     def create_avg_calc_thread(self):
         # 每个参数节点创建一个负责计算平均梯度的线程
         self.calc_loss_thread = dbt.CalcAverageLoss("计算平均梯度线程")
-        self.calc_loss_thread.init_para(self.ip_set, self.send_queues, self.rec_queues, self.rec_locks)
+        self.calc_loss_thread.init_para(self.ip_set, self.send_queues, self.rec_queues, self.rec_locks,
+                                        self.clients_num)
 
     def _start_send_rec_threads(self):
         for port, ip in self.ip_set.items():
