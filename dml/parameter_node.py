@@ -24,12 +24,12 @@ class ParameterServer:
         self.server_nodes = {}
         self.calc_loss_thread = None
 
-    def distributed_dnn(self):
+    def distributed_dnn(self, calc_thread):
         self._create_server_nodes()  # 根据计算节点的个数创建对应的通信节点
         self._init_socket_conn()  # 和计算节点建立连接
         self._init_send_rec_queues()  # 创建用于接受数据的队列
         self.create_send_rec_threads()  # 每个通信节点创建两个进程（负责收、发）
-        self.create_avg_calc_thread()  # 创建参数服务器用于计算机平均梯度或者loss的线程
+        self._set_avg_calc_thread(calc_thread)  # 创建参数服务器用于计算机平均梯度或者loss的线程
         self._start_send_rec_threads()  # 开启进程
         self._notify_clients()  # 通知所有的计算节点可以开始发送数据
         self._start_avg_calc_thread()  # 开启计算平均梯度的线程
@@ -85,9 +85,9 @@ class ParameterServer:
             self.server_nodes[port].set_thread_list(thread_list)
 
     # 允许被子类重载
-    def create_avg_calc_thread(self):
+    def _set_avg_calc_thread(self, calc_thread):
         # 每个参数节点创建一个负责计算平均梯度的线程
-        self.calc_loss_thread = dbt.CalcAverageLoss("计算平均梯度线程")
+        self.calc_loss_thread = calc_thread
         self.calc_loss_thread.init_para(self.ip_set, self.send_queues, self.rec_queues, self.rec_locks,
                                         self.clients_num)
 

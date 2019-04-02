@@ -10,7 +10,6 @@
 '''
 import json
 import threading
-import time
 
 from dml import server_node as sn
 from dml import worker_node as wn
@@ -122,7 +121,7 @@ class WorkBaseSendThread(threading.Thread):
                 if data is not None:
                     print("send data:", data)
                     self.send_client.server_socket.send(self.handle_data(data))
-                #time.sleep(0.1)
+                # time.sleep(0.1)
                 # self.send_lock.release()
 
     def handle_data(self, data):
@@ -182,7 +181,7 @@ class CalcAverageLoss(threading.Thread):
 
         print("start the thread:" + self.thread_name)
 
-    def init_para(self, ip_set, send_list, rec_list, rec_lock_list,num):
+    def init_para(self, ip_set, send_list, rec_list, rec_lock_list, num):
         self.send_data_list = send_list
         self.rec_data_list = rec_list
         self.rec_lock_list = rec_lock_list
