@@ -50,7 +50,6 @@ class WorkerNode:
             return self.rec_queue.get()
         # self.rec_lock.release()
 
-
-def _close_socket(self):
-    if self.socket_reference_count == 0:
-        self.server_socket.close()
+    def _close_socket(self):
+        if self.socket_reference_count == 0:
+            self.server_socket.close()

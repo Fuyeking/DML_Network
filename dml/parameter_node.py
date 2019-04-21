@@ -8,7 +8,7 @@ module = __import__("dml.dml_base_thread")
 
 
 class ParameterServer:
-    calc_loss_thread: dbt.CalcAverageLoss
+    calc_loss_thread: dbt.CalcAverageParameters
 
     def __init__(self, ip_set, num):
         """
@@ -32,7 +32,7 @@ class ParameterServer:
         self._set_avg_calc_thread(calc_thread)  # 创建参数服务器用于计算机平均梯度或者loss的线程
         self._start_send_rec_threads()  # 开启进程
         self._notify_clients()  # 通知所有的计算节点可以开始发送数据
-        self._start_avg_calc_thread()  # 开启计算平均梯度的线程
+        #self._start_avg_calc_thread()  # 开启计算平均梯度的线程
 
     def _create_server_nodes(self):
         for port, ip in self.ip_set.items():

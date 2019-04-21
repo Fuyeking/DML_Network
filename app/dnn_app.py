@@ -11,11 +11,11 @@
 import dml.dml_base_thread as dbt
 
 
-class LossAverageThread(dbt.CalcAverageLoss):
+class ParameterAverageThread(dbt.CalcAverageParameters):
     def __init__(self, thread_name):
-        super(LossAverageThread, self).__init__(thread_name)
+        super(ParameterAverageThread, self).__init__(thread_name)
 
-    def _calc_average_loss(self):
+    def _calc_average_parameters(self):
         sum_w = 0.0
         for port, ip in self.ip_set.items():
             self.rec_lock_list[port].acquire()
@@ -24,9 +24,7 @@ class LossAverageThread(dbt.CalcAverageLoss):
                 if data is not None:
                     sum_w += data['Loss']
             self.rec_lock_list[port].release()
-
         average_loss = dict()
         average_loss['Loss'] = sum_w / self.num
-        print("new  loss：", average_loss)
+        # print("new  loss：", average_loss)
         return average_loss
-

@@ -9,6 +9,7 @@
 @desc:
 '''
 import json
+import pickle
 import threading
 
 from dml import server_node as sn
@@ -45,13 +46,14 @@ class ServerRecBaseThread(threading.Thread):
             data = self.server_obj.client.recv(sn.data_size)
             if data:
                 self.rec_lock.acquire()
-                self.rec_q.put(self.post_process(data))
+                self.rec_q.put(self.pre_process(data))
                 self.rec_lock.release()
 
-    # 可以被之类重载
-    def post_process(self, data):
-        print("recieve data:", data)
-        return json.loads(data.decode())
+    # 可以被子类重载
+    def pre_process(self, data):
+        parameters = pickle.loads(data)
+        print("recieve data:", parameters)
+        return parameters
 
 
 # 服务端的发送进程
@@ -84,12 +86,13 @@ class ServerSendBaseThread(threading.Thread):
             self.send_lock.acquire()
             if not self.send_q.empty():
                 data = self.send_q.get()
+                print("send data:", data)
                 self.server_obj.client.send(self.pre_process(data))
             self.send_lock.release()
 
     # 可以被子类重载
     def pre_process(self, data):
-        return json.dumps(data).encode()
+        return pickle.dumps(data)
 
 
 class WorkBaseSendThread(threading.Thread):
@@ -120,12 +123,12 @@ class WorkBaseSendThread(threading.Thread):
                 data = self.send_queue.get()
                 if data is not None:
                     print("send data:", data)
-                    self.send_client.server_socket.send(self.handle_data(data))
+                    self.send_client.server_socket.send(self.pre_process(data))
                 # time.sleep(0.1)
-                # self.send_lock.release()
+                # self.send_lock.release( )
 
-    def handle_data(self, data):
-        return json.dumps(data).encode()
+    def pre_process(self, data):
+        return pickle.dumps(data)
 
 
 class WorkBaseRecThread(threading.Thread):
@@ -154,19 +157,20 @@ class WorkBaseRecThread(threading.Thread):
             if data:
                 print("client recieve data", data)
                 # self.rec_lock.acquire()
-                self.rec_queue.put(self.handle_data(data))
+                self.rec_queue.put(self.pre_process(data))
                 # self.rec_lock.release()
 
-    def handle_data(self, data):
+    def pre_process(self, data):
         '''
         子类继承后，根据应用场景不同，进行重载
         :param data:
         :return:
         '''
-        return json.loads(data.decode())
+        
+        return pickle.loads(data)
 
 
-class CalcAverageLoss(threading.Thread):
+class CalcAverageParameters(threading.Thread):
     rec_lock_list: dict
     rec_data_list: dict
     send_data_list: dict
@@ -191,7 +195,7 @@ class CalcAverageLoss(threading.Thread):
     def run(self):
         while True:
             while self._check_rec_list():  # 所有计算节点已经发送数据到参数节点
-                send_loss = self._calc_average_loss()  # 计算均值
+                send_loss = self._calc_average_parameters()  # 计算均值
                 self._send_new_loss(send_loss)  # 给所有计算节点发送新的loss
 
     def _check_rec_list(self):
@@ -204,7 +208,7 @@ class CalcAverageLoss(threading.Thread):
                 return False
         return True
 
-    def _calc_average_loss(self):
+    def _calc_average_parameters(self):
         sum_w = 0
         sum_b = 0
         for port, ip in self.ip_set.items():

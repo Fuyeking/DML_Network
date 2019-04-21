@@ -17,8 +17,10 @@ import torch
 import torch.nn as nn
 import torch.utils.data as Data
 import torchvision
-import dml.dml_base_thread  as dbt
-import dml.worker_node as cn
+
+import dml.dml_base_thread as dbt
+import dml.worker_node as wn
+
 # torch.manual_seed(1)    # reproducible
 
 # Hyper Parameters
@@ -94,7 +96,7 @@ def get_loss(client):
     while True:
         data = client.get_rec_data()
         if data is not None:
-            #print(data)
+            # print(data)
             return data['Loss']
 
 
@@ -105,25 +107,29 @@ def cnn_test(ip, port):
     optimizer = torch.optim.Adam(cnn.parameters(), lr=LR)  # optimize all cnn parameters
     loss_func = nn.CrossEntropyLoss()  # the target label is not one-hotted
 
-    client = cn.WorkerNode()
+    client = wn.WorkerNode()
     client.connect(ip, port)
     client.prepare_net()
     send_thread = dbt.WorkBaseSendThread("计算节点", client)
     rec_thread = dbt.WorkBaseRecThread("计算节点", client)
     send_thread.start()
     rec_thread.start()
+    for i in cnn.state_dict().keys():
+        print(i)
     # training and testing
     for epoch in range(EPOCH):
         for step, (b_x, b_y) in enumerate(train_loader):  # gives batch data, normalize x when iterate train_loader
 
             output = cnn(b_x)[0]  # cnn output
             loss = loss_func(output, b_y)  # cross entropy loss
-            client.add_send_data(create_send_data(loss.data))
             optimizer.zero_grad()  # clear gradients for this training step
-            loss.data = torch.full(loss.data.size(), get_loss(client))#
             loss.backward()  # backpropagation, compute gradients
-            optimizer.step()  # apply gradients
-            print(step)
+
+            client.add_send_data(dict(cnn.named_parameters()))
+            # parameters = client.get_rec_data()
+            # for param, new_param in cnn.parameters(), parameters:
+            # param.grad = new_param.grad
+            optimizer.step()
             if step % 50 == 0:
                 test_output, last_layer = cnn(test_x)
                 pred_y = torch.max(test_output, 1)[1].data.numpy()

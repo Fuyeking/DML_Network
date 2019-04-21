@@ -1,6 +1,6 @@
 import socket
 
-data_size = 1024
+data_size = 1024*4
 
 
 class ServerNode:
