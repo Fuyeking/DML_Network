@@ -15,16 +15,16 @@ class ParameterAverageThread(dbt.CalcAverageParameters):
     def __init__(self, thread_name):
         super(ParameterAverageThread, self).__init__(thread_name)
 
-    def _calc_average_parameters(self):
-        sum_w = 0.0
-        for port, ip in self.ip_set.items():
-            self.rec_lock_list[port].acquire()
-            if not self.rec_data_list[port].empty():
-                data = self.rec_data_list[port].get()
-                if data is not None:
-                    sum_w += data['Loss']
-            self.rec_lock_list[port].release()
-        average_loss = dict()
-        average_loss['Loss'] = sum_w / self.num
-        # print("new  loss：", average_loss)
-        return average_loss
+    # def _calc_average_parameters(self):
+    #     sum_w = 0.0
+    #     for port, ip in self.ip_set.items():
+    #         self.rec_lock_list[port].acquire()
+    #         if not self.rec_data_list[port].empty():
+    #             data = self.rec_data_list[port].get()
+    #             if data is not None:
+    #                 sum_w += data['Loss']
+    #         self.rec_lock_list[port].release()
+    #     average_loss = dict()
+    #     average_loss['Loss'] = sum_w / self.num
+    #     # print("new  loss：", average_loss)
+    #     return average_loss

@@ -30,12 +30,12 @@ LR = 0.001  # learning rate
 DOWNLOAD_MNIST = False
 
 # Mnist digits dataset
-if not (os.path.exists('./mnist/')) or not os.listdir('./mnist/'):
+if not (os.path.exists('./mnist1/')) or not os.listdir('./mnist1/'):
     # not mnist dir or mnist is empyt dir
     DOWNLOAD_MNIST = True
 
 train_data = torchvision.datasets.MNIST(
-    root='./mnist/',
+    root='./mnist1/',
     train=True,  # this is training data
     transform=torchvision.transforms.ToTensor(),  # Converts a PIL.Image or numpy.ndarray to
     # torch.FloatTensor of shape (C x H x W) and normalize in the range [0.0, 1.0]
@@ -50,7 +50,7 @@ print(train_data.train_labels.size())  # (60000)
 train_loader = Data.DataLoader(dataset=train_data, batch_size=BATCH_SIZE, shuffle=True)
 
 # pick 2000 samples to speed up testing
-test_data = torchvision.datasets.MNIST(root='./mnist/', train=False)
+test_data = torchvision.datasets.MNIST(root='./mnist1/', train=False)
 test_x = torch.unsqueeze(test_data.test_data, dim=1).type(torch.FloatTensor)[
          :2000] / 255.  # shape from (2000, 28, 28) to (2000, 1, 28, 28), value in range(0,1)
 test_y = test_data.test_labels[:2000]
@@ -106,14 +106,6 @@ def cnn_test(ip, port):
 
     optimizer = torch.optim.Adam(cnn.parameters(), lr=LR)  # optimize all cnn parameters
     loss_func = nn.CrossEntropyLoss()  # the target label is not one-hotted
-
-    client = wn.WorkerNode()
-    client.connect(ip, port)
-    client.prepare_net()
-    send_thread = dbt.WorkBaseSendThread("计算节点", client)
-    rec_thread = dbt.WorkBaseRecThread("计算节点", client)
-    send_thread.start()
-    rec_thread.start()
     for i in cnn.state_dict().keys():
         print(i)
     # training and testing
@@ -125,7 +117,7 @@ def cnn_test(ip, port):
             optimizer.zero_grad()  # clear gradients for this training step
             loss.backward()  # backpropagation, compute gradients
 
-            client.add_send_data(dict(cnn.named_parameters()))
+            #client.add_send_data(dict(cnn.named_parameters()))
             # parameters = client.get_rec_data()
             # for param, new_param in cnn.parameters(), parameters:
             # param.grad = new_param.grad
@@ -134,7 +126,7 @@ def cnn_test(ip, port):
                 test_output, last_layer = cnn(test_x)
                 pred_y = torch.max(test_output, 1)[1].data.numpy()
                 accuracy = float((pred_y == test_y.data.numpy()).astype(int).sum()) / float(test_y.size(0))
-                print('Epoch: ', epoch, '| train loss: %.4f' % loss.data.numpy(), '| test accuracy: %.2f' % accuracy)
+                print('Epoch: ', step, '| train loss: %.4f' % loss.data.numpy(), '| test accuracy: %.2f' % accuracy)
 
     # print 10 predictions from test data
     test_output, _ = cnn(test_x[:10])

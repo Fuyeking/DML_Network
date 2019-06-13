@@ -8,12 +8,13 @@
 @time: 2019/3/20 13:32
 @desc:
 '''
-from examples import cnn
+from examples import gd
 
 port = 12345
 ip = "127.0.0.1"
 
 if __name__ == '__main__':
     # test_fun.dnn_test(ip, port)
-    # gd.gd_test(ip,port)
-    cnn.cnn_test(ip, port)
+    gd.gd_test(ip, port)
+    # cnn.cnn_test(ip, port)
+    # regression.regress_test(ip, port)
